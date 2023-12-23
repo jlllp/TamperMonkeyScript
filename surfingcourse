@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         继续教育刷网课
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
-// @description  网课视频自动播放下一级 有问题可以通过邮箱cheat_lipeng@foxmail.com反馈问题
+// @version      1.0.2
+// @description  网课视频自动播放下一集 有问题可以通过邮箱cheat_lipeng@foxmail.com反馈问题
 // @author       JllLp
 // @match      *://cqlg.360xkw.com/gxplatform/gxlearningcenter/learning.html*
 // @match      *://cqlg.360xkw.com/gxplatform/gxlearningcenter/rebackVideo.html*
@@ -16,33 +16,46 @@
 (function () {
     'use strict';
 
-    // 获取视频播放元素
-    window.onload = function () {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log("自动播放 -- 脚本加载成功");
-        const video = document.getElementById("live_video");
-        // 判断video不为空
-        if (video === null) {
+        const videoElement = document.getElementById("live_video");
+        if (!videoElement) {
             console.log("自动播放 -- 视频播放元素为空");
             return;
         }
-        // 监听播放完成时间
-        video.addEventListener('ended', delayTheNextOne);
 
+        const delay = Math.random() * 3000 + 3000;
+        const videoList = Array.from(document.getElementsByClassName("layui-colla-content layui-show")[0].children[0].children);
+        const currentVideoIndex = findCurrentVideoIndex(videoList);
+        console.log(`自动播放视频 -- 视频列表进度：[${currentVideoIndex + 1}] - [${videoList.length}]`);
+        console.log(`自动播放 -- 本视频结束后 ${Math.round(delay / 1000)} 秒后自动播放下一个视频`);
+
+        videoElement.addEventListener('ended', () => playNextVideoWithDelay(videoList, currentVideoIndex, delay));
 
         /**
-         * 延迟播放下一个视频
+         * 获取当前正在播放的视频在视频列表中的索引。
+         * @param {HTMLElement[]} list - 视频元素的列表。
+         * @returns {number} - 当前播放视频的索引，如果没有正在播放的视频则返回-1。
          */
-        function delayTheNextOne() {
-            // 生成3秒到6秒之间的随机延迟
-            const delay = Math.random() * 3000 + 3000;
-            // 获取播放列表元素，并将它转换为数组
-            const list = Array.from(document.getElementsByClassName("layui-colla-content layui-show")[0].children[0].children);
-            // 获取当前视频索引
-            const currentVideoIndex = getCurrentVideoIndex(list);
-            console.log(`自动播放视频 -- 视频列表进度：[${currentVideoIndex + 1}] - [${list.length}]`);
-            console.log(`自动播放 -- 本视频结束后 ${Math.round(delay / 1000)} 秒后自动播放下一个视频`);
+        function findCurrentVideoIndex(list) {
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i];
+                if (item.children[0].className === 'isVideo onLive') {
+                    return i;
+                }
+            }
+            // 如果没有找到当前播放的视频，返回-1或其他标识
+            return -1; 
+        }
+
+        /**
+         * 延迟播放下一集视频。
+         * @param {HTMLElement[]} list - 视频列表。
+         * @param {number} currentVideoIndex - 当前视频索引。
+         * @param {number} delay - 延迟时间（毫秒）。
+         */
+        function playNextVideoWithDelay(list, currentVideoIndex, delay) {
             setTimeout(() => {
-                // 准备播放下一视频
                 const nextVideo = list[currentVideoIndex + 1];
                 if (nextVideo) {
                     const playButton = nextVideo.children[0];
@@ -52,21 +65,5 @@
                 }
             }, delay);
         }
-
-        /**
-         * 获取当前正在播放的视频在视频列表中的索引。
-         * @param {HTMLElement[]} list - 视频元素的列表。
-         * @returns {number} - 当前播放视频的索引，如果没有正在播放的视频则返回-1。
-         */
-        function getCurrentVideoIndex(list) {
-            for (let i = 0; i < list.length; i++) {
-                let item = list[i];
-                if (item.children[0].className === 'isVideo onLive') {
-                    return i;
-                }
-            }
-            return -1; // 如果没有找到当前播放的视频，返回-1或其他标识
-        }
-    }
-
+    });
 })();
