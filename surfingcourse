@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         继续教育刷网课
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  网课视频自动播放下一集 有问题可以通过邮箱cheat_lipeng@foxmail.com反馈问题
 // @author       JllLp
 // @match      *://cqlg.360xkw.com/gxplatform/gxlearningcenter/learning.html*
@@ -15,8 +15,7 @@
 
 (function () {
     'use strict';
-
-    document.addEventListener('DOMContentLoaded', function () {
+    window.onload = function () {
         console.log("自动播放 -- 脚本加载成功");
         const videoElement = document.getElementById("live_video");
         if (!videoElement) {
@@ -45,7 +44,7 @@
                 }
             }
             // 如果没有找到当前播放的视频，返回-1或其他标识
-            return -1; 
+            return -1;
         }
 
         /**
@@ -65,5 +64,6 @@
                 }
             }, delay);
         }
-    });
+
+    };
 })();
